@@ -6,6 +6,13 @@ This is a Python 3 command line application to get the stats of the Hallway bot.
 
 Update the SLACK_API_TOKEN variable with your slack API token. Update the HALLWAY_BOT_ID and HALLWAY_USER_ID with the appropriate values for the Hallway Bot.
 
+If using a legacy token, no action is needed. If using a Slack app token, the app needs the following permissions:
+
+* channels:history
+* channels:read
+* identity
+* users:read
+
 #### Usage
 
 On the command line:
