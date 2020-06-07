@@ -29,8 +29,10 @@ TAB = "\t"
 URL_ENCODE_DOT = "%2E"
 TEXT = "text"
 DOT = "."
+SPACE = " "
 JOINED_THE_CALL = " joined the call"
-EMAIL_OUT = "%s%s"
+LONG_NAME_LENGTH = 14
+SHORT_NAME_LENGTH = 6
 found_users = []
 found_user_names = []
 found_users_count = []
@@ -45,13 +47,13 @@ channel_list_ret = requests.get(SLACK_API_URL_CHANNEL_LIST % SLACK_API_TOKEN).js
 def index(l, f):
      return next((i for i in range(len(l)) if f(l[i])), None)
 
-def find_val(l, val, sub):
+def find_name(l, name, sub):
     ret = []
     t = None
     if sub != None:
-        t = index(l, lambda item: item[sub] == val)
+        t = index(l, lambda item: item[sub] == name)
     else:
-        t = index(l, lambda item: item == val)
+        t = index(l, lambda item: item == name)
     if (t == None):
         ret.append(None)
         ret.append(-1)
@@ -91,14 +93,14 @@ else:
                                 ts = ts.replace(DOT, URL_ENCODE_DOT)
                                 url = SLACK_API_URL_CONVO_REPLIES % (SLACK_API_TOKEN, channel[ID], ts)
                                 convo_replies = requests.get(url).json()
-                                rmessages = convo_replies[MESSAGES]                                
+                                rmessages = convo_replies[MESSAGES]     
                                 for reply in rmessages:
                                     if BOT_ID in reply:                                        
                                         if reply[BOT_ID] == HALLWAY_BOT_ID and JOINED_THE_CALL in reply[TEXT]:
                                             bot_reply = bot_reply + 1                                            
                                             uid = reply[TEXT].replace(JOINED_THE_CALL, "").replace("<@","").replace(">","")
                                             if len(found_users) > 0:
-                                                element = find_val(found_users,uid, None)
+                                                element = find_name(found_users,uid, None)
                                                 if (element[0] == None):
                                                     found_users.append(uid)
                                                     found_users_count.append(1)
@@ -124,18 +126,18 @@ else:
             users_list = user_info_list[MEMBERS]
             users = list(filter(lambda u: u[ID] in members, users_list))
             for user in found_users:
-                    ui = find_val(users, user, ID)
+                    ui = find_name(users, user, ID)
                     if ui[0] != None:
                         found_user_names.append(ui[0].get(NAME))
 
     for idx,val in enumerate(found_users):
         if len(found_user_names) > idx and len(found_users_count) > idx:
             tt = TAB
-            if (len(found_user_names[idx]) < 14):
-                tt = TAB + TAB
-                if len(found_user_names[idx]) < 6:
+            if (len(found_user_names[idx]) < LONG_NAME_LENGTH):
+                tt = tt + TAB
+                if len(found_user_names[idx]) < SHORT_NAME_LENGTH:
                     tt = tt + TAB
-            print(found_users[idx] + " " + found_user_names[idx] + tt + str(found_users_count[idx]))
+            print(found_users[idx] + SPACE + found_user_names[idx] + tt + str(found_users_count[idx]))
 
     print()
     print("Total Hallway Participants:\t\t" + str(len(found_user_names)))
